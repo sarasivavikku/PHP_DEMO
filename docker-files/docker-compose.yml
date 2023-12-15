@@ -1,13 +1,13 @@
 version: "3"
 services:
    web:
-     image: "${DOCKER_IMAGE}"
+     image: vikranth2/java-mvn-privaterepos:php
      ports:
      - 8001:80
      depends_on:
      - mysql
    mysql:
-     image: devopstrainer/java-mvn-privaterepos:mysql
+     image: vikranth2/java-mvn-privaterepos:mysql
      volumes:
      - db_data:/var/lib/mysql
      environment:
