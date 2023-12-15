@@ -1,23 +1,23 @@
 pipeline {
    agent none
   environment{
-      BUILD_SERVER_IP='ec2-user@52.66.198.180'
-       IMAGE_NAME='devopstrainer/java-mvn-privaterepos:php$BUILD_NUMBER'
-       DEPLOY_SERVER_IP='ec2-user@15.206.158.227'
+       IMAGE_NAME='vikranth2/java-mvn-privaterepos:php$BUILD_NUMBER'
+       deploy_server='ec2-user@172.31.22.3'
+        Build4='ec2-user@172.31.21.87'
    }
     stages {          
         stage('BUILD DOCKERIMAGE AND PUSH TO DOCKERHUB') {
             agent any            
             steps {
                 script{
-                sshagent(['ssh-key']) {
-                withCredentials([usernamePassword(credentialsId: 'dockerhub', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
+                sshagent(['build4']) {
+                withCredentials([usernamePassword(credentialsId: 'docker', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
                 echo "Packaging the apps"
-                sh "scp -o StrictHostKeyChecking=no -r docker-files ${BUILD_SERVER_IP}:/home/ec2-user"
-                sh "ssh -o StrictHostKeyChecking=no ${BUILD_SERVER_IP} 'bash ~/docker-files/docker-script.sh'"
-                sh "ssh ${BUILD_SERVER_IP} sudo docker build -t ${IMAGE_NAME} /home/ec2-user/docker-files/"
-                sh "ssh ${BUILD_SERVER_IP} sudo docker login -u $USERNAME -p $PASSWORD"
-                sh "ssh ${BUILD_SERVER_IP} sudo docker push ${IMAGE_NAME}"
+                sh "scp -o StrictHostKeyChecking=no -r docker-files ${Build4}:/home/ec2-user"
+                sh "ssh -o StrictHostKeyChecking=no ${Build4} 'bash ~/docker-files/docker-script.sh'"
+                sh "ssh ${Build4} sudo docker build -t ${IMAGE_NAME} /home/ec2-user/docker-files/"
+                sh "ssh ${Build4} sudo docker login -u $USERNAME -p $PASSWORD"
+                sh "ssh ${Build4} sudo docker push ${IMAGE_NAME}"
               }
             }
             }
@@ -27,12 +27,12 @@ pipeline {
            agent any
            steps{
                script{
-                    sshagent(['ssh-key']){
-                         withCredentials([usernamePassword(credentialsId: 'dockerhub', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
-                         sh "scp -o StrictHostKeyChecking=no -r docker-files ${DEPLOY_SERVER_IP}:/home/ec2-user"
-                         sh "ssh -o StrictHostKeyChecking=no ${DEPLOY_SERVER_IP} 'bash ~/docker-files/docker-script.sh'"
-                         sh "ssh ${DEPLOY_SERVER_IP} sudo docker login -u $USERNAME -p $PASSWORD"
-                         sh "ssh ${DEPLOY_SERVER_IP} bash /home/ec2-user/docker-files/docker-compose-script.sh ${IMAGE_NAME}"
+                    sshagent(['Deploy_server']){
+                         withCredentials([usernamePassword(credentialsId: 'docker', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
+                         sh "scp -o StrictHostKeyChecking=no -r docker-files ${deploy_server}:/home/ec2-user"
+                         sh "ssh -o StrictHostKeyChecking=no ${deploy_server} 'bash ~/docker-files/docker-script.sh'"
+                         sh "ssh ${deploy_server} sudo docker login -u $USERNAME -p $PASSWORD"
+                         sh "ssh ${deploy_server} bash /home/ec2-user/docker-files/docker-compose-script.sh ${IMAGE_NAME}"
                          }
                     }
                }
