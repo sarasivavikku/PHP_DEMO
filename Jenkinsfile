@@ -13,7 +13,7 @@ pipeline {
                 sshagent(['build4']) {
                 withCredentials([usernamePassword(credentialsId: 'docker', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
                 echo "Packaging the apps"
-                sh "scp -o StrictHostKeyChecking=no -r docker-files ${Build4}:/home/ec2-user"
+                sh "scp -o StrictHostKeyChecking=no -r docker-files ec2-user@172.31.21.87:/home/ec2-user"
                 sh "ssh -o StrictHostKeyChecking=no ${Build4} 'bash ~/docker-files/docker-script.sh'"
                 sh "ssh ${Build4} sudo docker build -t ${IMAGE_NAME} /home/ec2-user/docker-files/"
                 sh "ssh ${Build4} sudo docker login -u $USERNAME -p $PASSWORD"
